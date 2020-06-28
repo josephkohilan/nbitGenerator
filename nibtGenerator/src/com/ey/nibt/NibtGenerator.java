@@ -58,7 +58,7 @@ public class NibtGenerator {
 					Double accountNo = null;
 					if (accountNoCell.getCellType().equals(CellType.NUMERIC)) {
 						accountNo = accountNoCell.getNumericCellValue();
-					} else {
+					} else if (accountNoCell.getCellType().equals(CellType.STRING)) {
 						String accountNoText = accountNoCell.getStringCellValue();
 						if (StringUtils.isNumeric(accountNoText)) {
 							accountNo = Double.valueOf(accountNoText);
