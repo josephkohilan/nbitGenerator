@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -51,13 +52,22 @@ public class NibtGenerator {
 		int lastRow = sheet.getLastRowNum();
 		for (int rowNo = 1; rowNo <= lastRow; rowNo++) {
 			Row row = sheet.getRow(rowNo);
-			if(null != row) {
+			if (null != row) {
 				Cell accountNoCell = row.getCell(ACCOUNT_NUMBER_COLUMN);
-				if (null != accountNoCell && accountNoCell.getCellType().equals(CellType.NUMERIC)) {
-					Double accountNo = accountNoCell.getNumericCellValue();
-					if ((accountNo >= NPAT_ACCOUNT_NUMBER_START && accountNo <= NPAT_ACCOUNT_NUMBER_END)
-							|| EXCEPTIONAL_NPAT_ACCOUNT_NUMBERS.contains(accountNo)) {
-						Double totalOfReportingPeriod = row.getCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).getNumericCellValue();
+				if (null != accountNoCell) {
+					Double accountNo = null;
+					if (accountNoCell.getCellType().equals(CellType.NUMERIC)) {
+						accountNo = accountNoCell.getNumericCellValue();
+					} else {
+						String accountNoText = accountNoCell.getStringCellValue();
+						if (StringUtils.isNumeric(accountNoText)) {
+							accountNo = Double.valueOf(accountNoText);
+						}
+					}
+					if (null != accountNo && ((accountNo >= NPAT_ACCOUNT_NUMBER_START && accountNo <= NPAT_ACCOUNT_NUMBER_END)
+							|| EXCEPTIONAL_NPAT_ACCOUNT_NUMBERS.contains(accountNo))) {
+						Double totalOfReportingPeriod = row.getCell(TOTAL_OF_REPORTING_PERIOD_COLUMN)
+								.getNumericCellValue();
 						netProfitAfterTax = netProfitAfterTax + totalOfReportingPeriod;
 						if (TAX_ACCOUNT_NUMBERS.contains(accountNo)) {
 							taxAmount = taxAmount + totalOfReportingPeriod;
@@ -70,18 +80,19 @@ public class NibtGenerator {
 		writeResults(sheet, netProfitAfterTax, taxAmount, nibt, lastRow);
 	}
 
-	private static void writeResults(XSSFSheet sheet, Double netProfitAfterTax, Double taxAmount, Double nibt, int lastRow) {
-		for(int count = 1; count <= 3; count++) {
+	private static void writeResults(XSSFSheet sheet, Double netProfitAfterTax, Double taxAmount, Double nibt,
+			int lastRow) {
+		for (int count = 1; count <= 3; count++) {
 			Row row = sheet.createRow(lastRow + 2 + count);
-			if(count == 1) {
+			if (count == 1) {
 				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(NPAT_LABEL);
 				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
 			}
-			if(count == 2) {
+			if (count == 2) {
 				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(NIBT_LABEL);
 				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
 			}
-			if(count == 3) {
+			if (count == 3) {
 				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(TAX_AMOUNT_LABEL);
 				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
 			}

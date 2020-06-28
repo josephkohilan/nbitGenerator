@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="jar/xmlbeans-3.1.0.jar"/>
 	<classpathentry kind="lib" path="jar/commons-compress-1.20.jar"/>
 	<classpathentry kind="lib" path="jar/ooxml-schemas-1.4.jar"/>
+	<classpathentry kind="lib" path="jar/commons-lang3-3.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
