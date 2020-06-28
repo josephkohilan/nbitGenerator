@@ -15,7 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class NibtGenerator {
 
-	public static final String FILE_PATH = "C:\\Users\\jmartinthiagaraj\\Desktop\\nibt.xlsx";
+	public static final String FILE_PATH = "nibt.xlsx";
 	public static final Integer ACCOUNT_NUMBER_COLUMN = 2;
 	public static final Integer TEXT_FOR_BS_PL_ITEM_COLUMN = 3;
 	public static final Integer TOTAL_OF_REPORTING_PERIOD_COLUMN = 4;
