@@ -87,11 +87,11 @@ public class NibtGenerator {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NPAT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
 			}
-			if (count == 2) {
+			else if (count == 2) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NIBT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
 			}
-			if (count == 3) {
+			else if (count == 3) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.TAX_AMOUNT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
 			}
