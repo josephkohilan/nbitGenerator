@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -13,19 +11,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class NibtGenerator {
+import com.ey.nibt.constants.Constants;
+import com.ey.nibt.utils.CommonUtils;
 
-	public static final String FILE_PATH = "C:\\Users\\jmartinthiagaraj\\Desktop\\nibt.xlsx";
-	public static final Integer ACCOUNT_NUMBER_COLUMN = 2;
-	public static final Integer TEXT_FOR_BS_PL_ITEM_COLUMN = 3;
-	public static final Integer TOTAL_OF_REPORTING_PERIOD_COLUMN = 4;
-	public static final List<Double> TAX_ACCOUNT_NUMBERS = Arrays.asList(87210D, 87220D, 87222D, 87223D, 87224D);
-	public static final List<Double> EXCEPTIONAL_NPAT_ACCOUNT_NUMBERS = Arrays.asList(860100D);
-	public static final Double NPAT_ACCOUNT_NUMBER_START = 4000D;
-	public static final Double NPAT_ACCOUNT_NUMBER_END = 99999D;
-	public static final String NPAT_LABEL = "Net Profit After Tax";
-	public static final String NIBT_LABEL = "NIBT";
-	public static final String TAX_AMOUNT_LABEL = "Tax Amount";
+public class NibtGenerator {
 
 	public static void main(String[] args) {
 		generateNibtTaxInfo();
@@ -33,12 +22,12 @@ public class NibtGenerator {
 
 	private static void generateNibtTaxInfo() {
 		try {
-			FileInputStream file = new FileInputStream(new File(FILE_PATH));
+			FileInputStream file = new FileInputStream(new File(Constants.FILE_PATH));
 			XSSFWorkbook workbook = new XSSFWorkbook(file);
 			for (int sheetNo = 0; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
 				processSheet(workbook.getSheetAt(sheetNo), workbook);
 			}
-			workbook.write(new FileOutputStream(FILE_PATH));
+			workbook.write(new FileOutputStream(Constants.FILE_PATH));
 			file.close();
 		} catch (Exception e) {
 			System.out.println("Invalid Excel: " + e.getMessage());
@@ -51,16 +40,36 @@ public class NibtGenerator {
 		int lastRow = sheet.getLastRowNum();
 		for (int rowNo = 1; rowNo <= lastRow; rowNo++) {
 			Row row = sheet.getRow(rowNo);
-			if(null != row) {
-				Cell accountNoCell = row.getCell(ACCOUNT_NUMBER_COLUMN);
-				if (null != accountNoCell && accountNoCell.getCellType().equals(CellType.NUMERIC)) {
-					Double accountNo = accountNoCell.getNumericCellValue();
-					if ((accountNo >= NPAT_ACCOUNT_NUMBER_START && accountNo <= NPAT_ACCOUNT_NUMBER_END)
-							|| EXCEPTIONAL_NPAT_ACCOUNT_NUMBERS.contains(accountNo)) {
-						Double totalOfReportingPeriod = row.getCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).getNumericCellValue();
-						netProfitAfterTax = netProfitAfterTax + totalOfReportingPeriod;
-						if (TAX_ACCOUNT_NUMBERS.contains(accountNo)) {
-							taxAmount = taxAmount + totalOfReportingPeriod;
+			if (null != row) {
+				Cell accountNoCell = row.getCell(Constants.ACCOUNT_NUMBER_COLUMN);
+				if (null != accountNoCell) {
+					Double accountNo = null;
+					if (accountNoCell.getCellType().equals(CellType.NUMERIC)) {
+						accountNo = accountNoCell.getNumericCellValue();
+					} else if (accountNoCell.getCellType().equals(CellType.STRING)) {
+						String accountNoText = accountNoCell.getStringCellValue();
+						if (CommonUtils.isDouble(accountNoText)) {
+							accountNo = Double.valueOf(accountNoText);
+						}
+					}
+					if (null != accountNo && ((accountNo >= Constants.NPAT_ACCOUNT_NUMBER_START
+							&& accountNo <= Constants.NPAT_ACCOUNT_NUMBER_END)
+							|| Constants.EXCEPTIONAL_NPAT_ACCOUNT_NUMBERS.contains(accountNo))) {
+						Double totalOfReportingPeriod = null;
+						Cell totalOfReportingPeriodCell = row.getCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN);
+						if (totalOfReportingPeriodCell.getCellType().equals(CellType.NUMERIC)) {
+							totalOfReportingPeriod = totalOfReportingPeriodCell.getNumericCellValue();
+						} else if (totalOfReportingPeriodCell.getCellType().equals(CellType.STRING)) {
+							String totalOfReportingPeriodText = totalOfReportingPeriodCell.getStringCellValue();
+							if (CommonUtils.isDouble(totalOfReportingPeriodText)) {
+								totalOfReportingPeriod = Double.valueOf(totalOfReportingPeriodText);
+							}
+						}
+						if (null != totalOfReportingPeriod) {
+							netProfitAfterTax = netProfitAfterTax + totalOfReportingPeriod;
+							if (Constants.TAX_ACCOUNT_NUMBERS.contains(accountNo)) {
+								taxAmount = taxAmount + totalOfReportingPeriod;
+							}
 						}
 					}
 				}
@@ -70,20 +79,21 @@ public class NibtGenerator {
 		writeResults(sheet, netProfitAfterTax, taxAmount, nibt, lastRow);
 	}
 
-	private static void writeResults(XSSFSheet sheet, Double netProfitAfterTax, Double taxAmount, Double nibt, int lastRow) {
-		for(int count = 1; count <= 3; count++) {
+	private static void writeResults(XSSFSheet sheet, Double netProfitAfterTax, Double taxAmount, Double nibt,
+			int lastRow) {
+		for (int count = 1; count <= 3; count++) {
 			Row row = sheet.createRow(lastRow + 2 + count);
-			if(count == 1) {
-				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(NPAT_LABEL);
-				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
+			if (count == 1) {
+				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NPAT_LABEL);
+				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
 			}
-			if(count == 2) {
-				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(NIBT_LABEL);
-				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
+			else if (count == 2) {
+				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NIBT_LABEL);
+				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
 			}
-			if(count == 3) {
-				row.createCell(TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(TAX_AMOUNT_LABEL);
-				row.createCell(TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
+			else if (count == 3) {
+				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.TAX_AMOUNT_LABEL);
+				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
 			}
 		}
 	}
