@@ -25,7 +25,7 @@ public class NibtGenerator {
 			FileInputStream file = new FileInputStream(new File(Constants.FILE_PATH));
 			XSSFWorkbook workbook = new XSSFWorkbook(file);
 			for (int sheetNo = 0; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
-				processSheet(workbook.getSheetAt(sheetNo), workbook);
+				processSheet(workbook.getSheetAt(sheetNo));
 			}
 			workbook.write(new FileOutputStream(Constants.FILE_PATH));
 			file.close();
@@ -34,7 +34,7 @@ public class NibtGenerator {
 		}
 	}
 
-	private static void processSheet(XSSFSheet sheet, XSSFWorkbook workbook) throws IOException {
+	private static void processSheet(XSSFSheet sheet) throws IOException {
 		Double netProfitAfterTax = 0D;
 		Double taxAmount = 0D;
 		int lastRow = sheet.getLastRowNum();
