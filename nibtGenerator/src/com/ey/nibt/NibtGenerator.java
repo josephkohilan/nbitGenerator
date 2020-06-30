@@ -25,7 +25,7 @@ public class NibtGenerator {
 			FileInputStream file = new FileInputStream(new File(Constants.FILE_PATH));
 			XSSFWorkbook workbook = new XSSFWorkbook(file);
 			for (int sheetNo = 0; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
-				processSheet(workbook.getSheetAt(sheetNo), workbook);
+				processSheet(workbook.getSheetAt(sheetNo));
 			}
 			workbook.write(new FileOutputStream(Constants.FILE_PATH));
 			file.close();
@@ -34,7 +34,7 @@ public class NibtGenerator {
 		}
 	}
 
-	private static void processSheet(XSSFSheet sheet, XSSFWorkbook workbook) throws IOException {
+	private static void processSheet(XSSFSheet sheet) throws IOException {
 		Double netProfitAfterTax = 0D;
 		Double taxAmount = 0D;
 		int lastRow = sheet.getLastRowNum();
@@ -86,12 +86,10 @@ public class NibtGenerator {
 			if (count == 1) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NPAT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
-			}
-			else if (count == 2) {
+			} else if (count == 2) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NIBT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
-			}
-			else if (count == 3) {
+			} else if (count == 3) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.TAX_AMOUNT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
 			}
