@@ -94,14 +94,14 @@ public class NibtGenerator {
 				} else {
 					cell.setCellFormula(netProfitAfterTaxFormula.substring(Constants.ZERO,
 							netProfitAfterTaxFormula.length() - Constants.ONE));
-					formulaEvaluator.evaluate(cell);
+					formulaEvaluator.evaluateFormulaCell(cell);
 				}
 			} else if (count == Constants.TWO) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NIBT_LABEL);
 				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN)
 						.setCellFormula(Constants.E_COLUMN + (lastRow + Constants.FOUR) + Constants.MINUS
 								+ Constants.E_COLUMN + (lastRow + Constants.SIX));
-				formulaEvaluator.evaluate(cell);
+				formulaEvaluator.evaluateFormulaCell(cell);
 			} else {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.TAX_AMOUNT_LABEL);
 				if (taxAmountFormula.equals(Constants.EMPTY)) {
@@ -109,10 +109,9 @@ public class NibtGenerator {
 				} else {
 					cell.setCellFormula(
 							taxAmountFormula.substring(Constants.ZERO, taxAmountFormula.length() - Constants.ONE));
-					formulaEvaluator.evaluate(cell);
+					formulaEvaluator.evaluateFormulaCell(cell);
 				}
 			}
 		}
-		formulaEvaluator.evaluateAll();
 	}
 }
