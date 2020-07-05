@@ -6,6 +6,12 @@ import java.util.List;
 public class Constants {
 	
 	public static final String FILE_PATH = "nibt.xlsx";
+	public static final Integer ZERO = 0;
+	public static final Integer ONE = 1;
+	public static final Integer TWO = 2;
+	public static final Integer THREE = 3;
+	public static final Integer FOUR = 4;
+	public static final Integer SIX = 6;
 	public static final Integer ACCOUNT_NUMBER_COLUMN = 2;
 	public static final Integer TEXT_FOR_BS_PL_ITEM_COLUMN = 3;
 	public static final Integer TOTAL_OF_REPORTING_PERIOD_COLUMN = 4;
@@ -16,5 +22,10 @@ public class Constants {
 	public static final String NPAT_LABEL = "Net Profit After Tax";
 	public static final String NIBT_LABEL = "NIBT";
 	public static final String TAX_AMOUNT_LABEL = "Tax Amount";
+	public static final String EMPTY = "";
+	public static final String E_COLUMN = "E";
+	public static final String PLUS = "+";
+	public static final String MINUS = "-";
+	public static final String INVALID_EXCEL = "Invalid Excel: ";
 
 }
