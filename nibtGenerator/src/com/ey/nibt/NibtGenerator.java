@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,21 +25,21 @@ public class NibtGenerator {
 		try {
 			FileInputStream file = new FileInputStream(new File(Constants.FILE_PATH));
 			XSSFWorkbook workbook = new XSSFWorkbook(file);
-			for (int sheetNo = 0; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
-				processSheet(workbook.getSheetAt(sheetNo));
+			for (int sheetNo = Constants.ZERO; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
+				processSheet(workbook, workbook.getSheetAt(sheetNo));
 			}
 			workbook.write(new FileOutputStream(Constants.FILE_PATH));
 			file.close();
 		} catch (Exception e) {
-			System.out.println("Invalid Excel: " + e.getMessage());
+			System.out.println(Constants.INVALID_EXCEL + e.getMessage());
 		}
 	}
 
-	private static void processSheet(XSSFSheet sheet) throws IOException {
-		Double netProfitAfterTax = 0D;
-		Double taxAmount = 0D;
+	private static void processSheet(XSSFWorkbook workbook, XSSFSheet sheet) throws IOException {
+		String netProfitAfterTaxFormula = Constants.EMPTY;
+		String taxAmountFormula = Constants.EMPTY;
 		int lastRow = sheet.getLastRowNum();
-		for (int rowNo = 1; rowNo <= lastRow; rowNo++) {
+		for (int rowNo = Constants.ONE; rowNo <= lastRow; rowNo++) {
 			Row row = sheet.getRow(rowNo);
 			if (null != row) {
 				Cell accountNoCell = row.getCell(Constants.ACCOUNT_NUMBER_COLUMN);
@@ -66,33 +67,52 @@ public class NibtGenerator {
 							}
 						}
 						if (null != totalOfReportingPeriod) {
-							netProfitAfterTax = netProfitAfterTax + totalOfReportingPeriod;
+							netProfitAfterTaxFormula = netProfitAfterTaxFormula + Constants.E_COLUMN
+									+ (rowNo + Constants.ONE) + Constants.PLUS;
 							if (Constants.TAX_ACCOUNT_NUMBERS.contains(accountNo)) {
-								taxAmount = taxAmount + totalOfReportingPeriod;
+								taxAmountFormula = taxAmountFormula + Constants.E_COLUMN + (rowNo + Constants.ONE)
+										+ Constants.PLUS;
 							}
 						}
 					}
 				}
 			}
 		}
-		Double nibt = netProfitAfterTax - taxAmount;
-		writeResults(sheet, netProfitAfterTax, taxAmount, nibt, lastRow);
+		writeResults(workbook, sheet, netProfitAfterTaxFormula, taxAmountFormula, lastRow);
 	}
 
-	private static void writeResults(XSSFSheet sheet, Double netProfitAfterTax, Double taxAmount, Double nibt,
-			int lastRow) {
-		for (int count = 1; count <= 3; count++) {
-			Row row = sheet.createRow(lastRow + 2 + count);
-			if (count == 1) {
+	private static void writeResults(XSSFWorkbook workbook, XSSFSheet sheet, String netProfitAfterTaxFormula,
+			String taxAmountFormula, int lastRow) {
+		FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+		for (int count = Constants.ONE; count <= Constants.THREE; count++) {
+			Row row = sheet.createRow(lastRow + Constants.TWO + count);
+			Cell cell = row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN);
+			if (count == Constants.ONE) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NPAT_LABEL);
-				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(netProfitAfterTax);
-			} else if (count == 2) {
+				if (netProfitAfterTaxFormula.equals(Constants.EMPTY)) {
+					cell.setCellValue(Constants.ZERO);
+				} else {
+					cell.setCellFormula(netProfitAfterTaxFormula.substring(Constants.ZERO,
+							netProfitAfterTaxFormula.length() - Constants.ONE));
+					formulaEvaluator.evaluate(cell);
+				}
+			} else if (count == Constants.TWO) {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.NIBT_LABEL);
-				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(nibt);
-			} else if (count == 3) {
+				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN)
+						.setCellFormula(Constants.E_COLUMN + (lastRow + Constants.FOUR) + Constants.MINUS
+								+ Constants.E_COLUMN + (lastRow + Constants.SIX));
+				formulaEvaluator.evaluate(cell);
+			} else {
 				row.createCell(Constants.TEXT_FOR_BS_PL_ITEM_COLUMN).setCellValue(Constants.TAX_AMOUNT_LABEL);
-				row.createCell(Constants.TOTAL_OF_REPORTING_PERIOD_COLUMN).setCellValue(taxAmount);
+				if (taxAmountFormula.equals(Constants.EMPTY)) {
+					cell.setCellValue(Constants.ZERO);
+				} else {
+					cell.setCellFormula(
+							taxAmountFormula.substring(Constants.ZERO, taxAmountFormula.length() - Constants.ONE));
+					formulaEvaluator.evaluate(cell);
+				}
 			}
 		}
+		formulaEvaluator.evaluateAll();
 	}
 }
